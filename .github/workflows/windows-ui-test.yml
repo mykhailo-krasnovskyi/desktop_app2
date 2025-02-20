@@ -52,15 +52,28 @@ jobs:
             exit 1
           }
 
-      - name: Start WinAppDriver (Background)
+      - name: Download and Install NSSM (Service Manager)
         shell: powershell
         run: |
-          Write-Output "Starting WinAppDriver..."
-          Start-Process -FilePath "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe" `
-                        -WindowStyle Hidden `
-                        -PassThru `
-                        -RedirectStandardOutput "winappdriver.log" `
-                        -RedirectStandardError "winappdriver_error.log"
+          $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
+          $nssmZip = "$env:TEMP\nssm.zip"
+          $nssmExtractPath = "$env:TEMP\nssm"
+
+          # Скачиваем NSSM
+          Invoke-WebRequest -Uri $nssmUrl -OutFile $nssmZip
+
+          # Распаковываем NSSM
+          Expand-Archive -Path $nssmZip -DestinationPath $nssmExtractPath -Force
+
+          # Копируем NSSM в систему
+          Copy-Item "$nssmExtractPath\nssm-2.24\win64\nssm.exe" "C:\Windows\System32\" -Force
+
+      - name: Start WinAppDriver as a Service
+        shell: powershell
+        run: |
+          Write-Output "Configuring WinAppDriver service..."
+          nssm install WinAppDriver "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
+          nssm start WinAppDriver
 
           Start-Sleep -Seconds 3
 
@@ -97,6 +110,14 @@ jobs:
 
       - name: Run UI Test
         run: python test_app.py
+
+      - name: Stop WinAppDriver Service
+        if: always()
+        shell: powershell
+        run: |
+          Write-Output "Stopping WinAppDriver service..."
+          nssm stop WinAppDriver
+          nssm remove WinAppDriver confirm
 
       - name: Upload Screenshot as Artifact
         uses: actions/upload-artifact@v4
