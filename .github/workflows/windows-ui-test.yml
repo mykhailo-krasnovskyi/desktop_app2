@@ -59,13 +59,10 @@ jobs:
           $nssmZip = "$env:TEMP\nssm.zip"
           $nssmExtractPath = "$env:TEMP\nssm"
 
-          # Скачиваем NSSM
           Invoke-WebRequest -Uri $nssmUrl -OutFile $nssmZip
 
-          # Распаковываем NSSM
           Expand-Archive -Path $nssmZip -DestinationPath $nssmExtractPath -Force
 
-          # Копируем NSSM в систему
           Copy-Item "$nssmExtractPath\nssm-2.24\win64\nssm.exe" "C:\Windows\System32\" -Force
 
       - name: Start WinAppDriver as a Service
@@ -75,7 +72,23 @@ jobs:
           nssm install WinAppDriver "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
           nssm start WinAppDriver
 
-          Start-Sleep -Seconds 3
+          $attempts = 0
+          $maxAttempts = 10
+          while ($attempts -lt $maxAttempts) {
+            $status = (Get-Service -Name WinAppDriver).Status
+            if ($status -eq "Running") {
+              Write-Output "✅ WinAppDriver service is running!"
+              break
+            }
+            Write-Output "⏳ Waiting for WinAppDriver service to start ($attempts/$maxAttempts)..."
+            Start-Sleep -Seconds 2
+            $attempts++
+          }
+
+          if ($status -ne "Running") {
+            Write-Output "❌ ERROR: WinAppDriver service failed to start!"
+            exit 1
+          }
 
       - name: Check if WinAppDriver is running
         shell: powershell
