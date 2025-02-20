@@ -56,7 +56,13 @@ jobs:
         shell: powershell
         run: |
           Write-Output "🔄 Starting WinAppDriver..."
-          Start-Process -FilePath "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe" -NoNewWindow -PassThru
+          Start-Process -FilePath "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe" `
+                        -WindowStyle Hidden `
+                        -NoNewWindow `
+                        -PassThru `
+                        -RedirectStandardOutput "winappdriver.log" `
+                        -RedirectStandardError "winappdriver_error.log"
+
           Start-Sleep -Seconds 3
 
       - name: Check if WinAppDriver is running
@@ -67,6 +73,9 @@ jobs:
             Write-Output "✅ WinAppDriver is running."
           } else {
             Write-Output "❌ WinAppDriver is NOT running!"
+            Write-Output "📜 Dumping WinAppDriver logs..."
+            Get-Content winappdriver.log -ErrorAction SilentlyContinue
+            Get-Content winappdriver_error.log -ErrorAction SilentlyContinue
             exit 1
           }
 
