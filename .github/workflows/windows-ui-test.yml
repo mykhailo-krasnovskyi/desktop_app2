@@ -22,29 +22,9 @@ jobs:
       - name: Install Dependencies
         run: pip install selenium pillow
 
-      - name: Download WinAppDriver
-        shell: powershell
+      - name: Install WinAppDriver from Microsoft Store
         run: |
-          $url = "https://github.com/microsoft/WinAppDriver/releases/download/v1.2/WindowsApplicationDriver.msi"
-          $output = "WinAppDriver.msi"
-          Invoke-WebRequest -Uri $url -OutFile $output
-          if (Test-Path $output) {
-            Write-Output "WinAppDriver downloaded successfully."
-          } else {
-            Write-Output "WinAppDriver download failed!"
-            exit 1
-          }
-
-      - name: Install WinAppDriver
-        shell: powershell
-        run: |
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/i WinAppDriver.msi /quiet /norestart" -Wait -NoNewWindow
-          if ($?) {
-            Write-Output "WinAppDriver installed successfully."
-          } else {
-            Write-Output "WinAppDriver installation failed!"
-            exit 1
-          }
+          Get-AppxPackage -Name Microsoft.WinAppDriver -AllUsers || Add-AppxPackage -Register "C:\Program Files\WindowsApps\Microsoft.WinAppDriver_1.2.0.0_x64__8wekyb3d8bbwe\AppxManifest.xml"
 
       - name: Run UI Test
         run: python test_app.py
