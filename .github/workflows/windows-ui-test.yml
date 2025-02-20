@@ -22,10 +22,10 @@ jobs:
       - name: Install Dependencies
         run: pip install selenium pillow
 
-      - name: Download and Install WinAppDriver
+      - name: Install WinAppDriver using winget
         run: |
-          Invoke-WebRequest -Uri "https://github.com/microsoft/WinAppDriver/releases/download/v1.2/WindowsApplicationDriver.msi" -OutFile "WinAppDriver.msi"
-          Start-Process -FilePath "msiexec.exe" -ArgumentList "/i WinAppDriver.msi /quiet /norestart" -Wait
+          winget install -e --id Microsoft.WinAppDriver
+
 
       - name: Run UI Test
         run: python test_app.py
