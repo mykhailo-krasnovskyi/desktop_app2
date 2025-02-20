@@ -58,7 +58,6 @@ jobs:
           Write-Output "🔄 Starting WinAppDriver..."
           Start-Process -FilePath "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe" `
                         -WindowStyle Hidden `
-                        -NoNewWindow `
                         -PassThru `
                         -RedirectStandardOutput "winappdriver.log" `
                         -RedirectStandardError "winappdriver_error.log"
