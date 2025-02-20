@@ -55,14 +55,15 @@ jobs:
       - name: Start WinAppDriver (Background)
         shell: powershell
         run: |
-          Start-Process -FilePath "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe" -NoNewWindow
-          Start-Sleep -Seconds 5
+          Write-Output "🔄 Starting WinAppDriver..."
+          Start-Process -FilePath "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe" -NoNewWindow -PassThru
+          Start-Sleep -Seconds 3
 
       - name: Check if WinAppDriver is running
         shell: powershell
         run: |
-          Get-Process WinAppDriver -ErrorAction SilentlyContinue
-          if ($?) {
+          $process = Get-Process WinAppDriver -ErrorAction SilentlyContinue
+          if ($process) {
             Write-Output "✅ WinAppDriver is running."
           } else {
             Write-Output "❌ WinAppDriver is NOT running!"
