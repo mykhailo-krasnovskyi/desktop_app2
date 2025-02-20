@@ -31,9 +31,9 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $output
 
           if (Test-Path $output) {
-            Write-Output "✅ WinAppDriver downloaded successfully."
+            Write-Output "WinAppDriver downloaded successfully."
           } else {
-            Write-Output "❌ WinAppDriver download failed!"
+            Write-Output "ERROR: WinAppDriver download failed!"
             exit 1
           }
 
@@ -46,16 +46,16 @@ jobs:
 
           $driverPath = "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
           if (Test-Path $driverPath) {
-            Write-Output "✅ WinAppDriver installed successfully."
+            Write-Output "WinAppDriver installed successfully."
           } else {
-            Write-Output "❌ WinAppDriver installation failed!"
+            Write-Output "ERROR: WinAppDriver installation failed!"
             exit 1
           }
 
       - name: Start WinAppDriver (Background)
         shell: powershell
         run: |
-          Write-Output "🔄 Starting WinAppDriver..."
+          Write-Output "Starting WinAppDriver..."
           Start-Process -FilePath "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe" `
                         -WindowStyle Hidden `
                         -PassThru `
@@ -69,21 +69,23 @@ jobs:
         run: |
           $process = Get-Process WinAppDriver -ErrorAction SilentlyContinue
           if ($process) {
-            Write-Output "✅ WinAppDriver is running."
+            Write-Output "WinAppDriver is running."
           } else {
-            Write-Output "❌ WinAppDriver is NOT running!"
-            Write-Output "📜 Dumping WinAppDriver logs..."
+            Write-Output "ERROR: WinAppDriver is NOT running!"
+            Write-Output "Dumping WinAppDriver logs..."
             
             if (Test-Path winappdriver.log) {
+              Write-Output "Contents of winappdriver.log:"
               Get-Content winappdriver.log
             } else {
-              Write-Output "⚠️ No log file found: winappdriver.log"
+              Write-Output "WARNING: No log file found: winappdriver.log"
             }
             
             if (Test-Path winappdriver_error.log) {
+              Write-Output "Contents of winappdriver_error.log:"
               Get-Content winappdriver_error.log
             } else {
-              Write-Output "⚠️ No log file found: winappdriver_error.log"
+              Write-Output "WARNING: No log file found: winappdriver_error.log"
             }
 
             exit 1
