@@ -22,19 +22,41 @@ jobs:
       - name: Install Dependencies
         run: pip install selenium pillow
 
-      - name: Download and Extract WinAppDriver
+      - name: Download WinAppDriver
         shell: powershell
         run: |
-          $url = "https://github.com/microsoft/WinAppDriver/releases/download/v1.2/WinAppDriver.zip"
-          $zipPath = "$env:TEMP\WinAppDriver.zip"
-          $extractPath = "$env:TEMP\WinAppDriver"
+          $url = "https://github.com/microsoft/WinAppDriver/releases/download/v1.2.1/WindowsApplicationDriver_1.2.1.msi"
+          $output = "$env:TEMP\WindowsApplicationDriver.msi"
 
-          Invoke-WebRequest -Uri $url -OutFile $zipPath
+          Invoke-WebRequest -Uri $url -OutFile $output
 
-          New-Item -ItemType Directory -Path $extractPath -Force
-          Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+          if (Test-Path $output) {
+            Write-Output "WinAppDriver downloaded successfully."
+          } else {
+            Write-Output "WinAppDriver download failed!"
+            exit 1
+          }
 
-          Start-Process -FilePath "$extractPath\WinAppDriver.exe"
+      - name: Install WinAppDriver
+        shell: powershell
+        run: |
+          $msiPath = "$env:TEMP\WindowsApplicationDriver.msi"
+
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/i $msiPath /quiet /norestart" -Wait -NoNewWindow
+
+          $driverPath = "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
+          if (Test-Path $driverPath) {
+            Write-Output "WinAppDriver installed successfully."
+          } else {
+            Write-Output "WinAppDriver installation failed!"
+            exit 1
+          }
+
+      - name: Start WinAppDriver
+        shell: powershell
+        run: |
+          Start-Process -FilePath "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
+          Start-Sleep -Seconds 5  # Даем драйверу время запуститься
 
       - name: Run UI Test
         run: python test_app.py
