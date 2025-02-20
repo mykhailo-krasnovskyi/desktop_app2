@@ -1,0 +1,37 @@
+name: Windows UI Test with WinAppDriver
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  win-ui-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: pip install selenium pillow
+
+      - name: Download and Install WinAppDriver
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/microsoft/WinAppDriver/releases/download/v1.2/WindowsApplicationDriver.msi" -OutFile "WinAppDriver.msi"
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/i WinAppDriver.msi /quiet /norestart" -Wait
+
+      - name: Run UI Test
+        run: python test_app.py
+
+      - name: Upload Screenshot as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ui-screenshot
+          path: screenshot.png
