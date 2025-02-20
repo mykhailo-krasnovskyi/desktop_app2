@@ -73,8 +73,19 @@ jobs:
           } else {
             Write-Output "❌ WinAppDriver is NOT running!"
             Write-Output "📜 Dumping WinAppDriver logs..."
-            Get-Content winappdriver.log -ErrorAction SilentlyContinue
-            Get-Content winappdriver_error.log -ErrorAction SilentlyContinue
+            
+            if (Test-Path winappdriver.log) {
+              Get-Content winappdriver.log
+            } else {
+              Write-Output "⚠️ No log file found: winappdriver.log"
+            }
+            
+            if (Test-Path winappdriver_error.log) {
+              Get-Content winappdriver_error.log
+            } else {
+              Write-Output "⚠️ No log file found: winappdriver_error.log"
+            }
+
             exit 1
           }
 
