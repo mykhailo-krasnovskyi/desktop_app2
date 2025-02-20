@@ -20,7 +20,7 @@ jobs:
           python-version: '3.9'
 
       - name: Install Dependencies
-        run: pip install selenium pillow
+        run: pip install selenium pillow requests
 
       - name: Download WinAppDriver
         shell: powershell
@@ -31,9 +31,9 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $output
 
           if (Test-Path $output) {
-            Write-Output "WinAppDriver downloaded successfully."
+            Write-Output "✅ WinAppDriver downloaded successfully."
           } else {
-            Write-Output "WinAppDriver download failed!"
+            Write-Output "❌ WinAppDriver download failed!"
             exit 1
           }
 
@@ -46,17 +46,32 @@ jobs:
 
           $driverPath = "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
           if (Test-Path $driverPath) {
-            Write-Output "WinAppDriver installed successfully."
+            Write-Output "✅ WinAppDriver installed successfully."
           } else {
-            Write-Output "WinAppDriver installation failed!"
+            Write-Output "❌ WinAppDriver installation failed!"
             exit 1
           }
 
-      - name: Start WinAppDriver
+      - name: Start WinAppDriver (Background)
         shell: powershell
         run: |
-          Start-Process -FilePath "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
-          Start-Sleep -Seconds 5  # Даем драйверу время запуститься
+          Start-Process -FilePath "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe" -NoNewWindow
+          Start-Sleep -Seconds 5
+
+      - name: Check if WinAppDriver is running
+        shell: powershell
+        run: |
+          Get-Process WinAppDriver -ErrorAction SilentlyContinue
+          if ($?) {
+            Write-Output "✅ WinAppDriver is running."
+          } else {
+            Write-Output "❌ WinAppDriver is NOT running!"
+            exit 1
+          }
+
+      - name: Debug Running Processes
+        shell: powershell
+        run: Get-Process | Select-String "WinAppDriver"
 
       - name: Run UI Test
         run: python test_app.py
