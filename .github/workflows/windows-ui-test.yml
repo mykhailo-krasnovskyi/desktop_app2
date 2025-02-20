@@ -22,9 +22,19 @@ jobs:
       - name: Install Dependencies
         run: pip install selenium pillow
 
-      - name: Install WinAppDriver from Microsoft Store
+      - name: Download and Extract WinAppDriver
+        shell: powershell
         run: |
-          Get-AppxPackage -Name Microsoft.WinAppDriver -AllUsers || Add-AppxPackage -Register "C:\Program Files\WindowsApps\Microsoft.WinAppDriver_1.2.0.0_x64__8wekyb3d8bbwe\AppxManifest.xml"
+          $url = "https://github.com/microsoft/WinAppDriver/releases/download/v1.2/WinAppDriver.zip"
+          $zipPath = "$env:TEMP\WinAppDriver.zip"
+          $extractPath = "$env:TEMP\WinAppDriver"
+
+          Invoke-WebRequest -Uri $url -OutFile $zipPath
+
+          New-Item -ItemType Directory -Path $extractPath -Force
+          Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+
+          Start-Process -FilePath "$extractPath\WinAppDriver.exe"
 
       - name: Run UI Test
         run: python test_app.py
